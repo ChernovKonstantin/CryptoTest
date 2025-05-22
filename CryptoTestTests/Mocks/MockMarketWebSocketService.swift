@@ -1,8 +1,8 @@
-//
-//  MockMarketWebSocketServiceImpl.swift
-//  CryptoTestTests
-//
-//  Created by Chernov Kostiantyn on 22.05.2025.
-//
+import Combine
 
-import Foundation
+
+final class MockMarketWebSocketService: MarketWebSocketService {
+    func connect(markets: [String]) async { }
+    
+    var subject = PassthroughSubject<[MarketUpdate], Never>()
+}

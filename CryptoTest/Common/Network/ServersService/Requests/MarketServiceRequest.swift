@@ -1,6 +1,6 @@
 enum MarketServiceRequest {
     
-    struct ServersList: APIRequest {
+    struct MarketList: APIRequest {
         typealias Result = MarketListResponse
         
         

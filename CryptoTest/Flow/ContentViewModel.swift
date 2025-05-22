@@ -4,7 +4,7 @@ import Factory
 import Foundation
 
 class ContentViewModel: ObservableObject {
-    @Injected(\.serversService) private var serversService: MarketService
+    @Injected(\.marketService) private var marketService: MarketService
     @Injected(\.webSockeService) private var webSockeService: MarketWebSocketService
     
     @Published var searchText: String = ""
@@ -28,7 +28,7 @@ class ContentViewModel: ObservableObject {
     func start() {
         Task {
             do {
-                let newMarkets = try await serversService.getMarketsList().response
+                let newMarkets = try await marketService.getMarketsList().response
                 self.allMarkets = newMarkets.currencies
                 let marketsList = newMarkets.marketList.compactMap {
                     $0.name

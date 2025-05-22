@@ -1,13 +1,11 @@
 import Foundation
-import RealHTTP
-
-public typealias NetworkRequest = HTTPRequest
 
 protocol APIRequest {
+    associatedtype Result: Decodable
 
-    associatedtype Result: Codable
-
-    func request() -> HTTPRequest
+    var endpoint: String { get }
+    var method: HTTPMethod { get }
+    var body: [String: Any]? { get }
 }
 
 protocol APIService: AnyObject {

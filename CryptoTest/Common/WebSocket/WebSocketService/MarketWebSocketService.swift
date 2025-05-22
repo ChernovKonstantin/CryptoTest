@@ -1,7 +1,6 @@
 import Combine
 
-protocol MarketWebSocketServiceProtocol {
-    func connect(markets: [String])
-    func disconnect()
-    var marketPublisher: AnyPublisher<[MarketState], Never> { get }
+protocol MarketWebSocketService {
+    func connect(markets: [String]) async
+    var subject: PassthroughSubject<[MarketUpdate], Never> { get }
 }

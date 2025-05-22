@@ -8,7 +8,7 @@ final class MarketServiceImpl: MarketService {
     
     func getMarketsList() async throws -> MarketListResponse {
         try await apiService.fetch(
-            ServersServiceRequests.ServersList()
+            MarketServiceRequest.MarketList()
         )
         
     }

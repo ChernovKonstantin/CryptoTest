@@ -1,58 +1,58 @@
 import Foundation
-import RealHTTP
 
 final class APIServiceImpl {
     
-    private let httpClient: HTTPClient
-    private let storage: Storable
-    
+    private let baseURL: URL 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
         return decoder
     }()
     
-    var authHeaders: HTTPHeaders {
-        guard let token: String = storage.get(for: .token) else {
-            return HTTPHeaders(headers: [])
-        }
-        
-        return HTTPHeaders(
-            headers: [
-                HTTPHeaders.Element(
-                    name: .authorization,
-                    value: "Bearer \(token)"
-                )
-            ]
-        )
-    }
-    
-    init(baseURL: URL, storage: Storable) {
-        self.httpClient = HTTPClient(baseURL: baseURL)
-        self.storage = storage
+    init(baseURL: URL) {
+        self.baseURL = baseURL
     }
 }
 
 extension APIServiceImpl: APIService {
     
     func fetch<T: APIRequest>(_ convertible: T) async throws -> T.Result {
-        let request = convertible.request()
-        request.headers = authHeaders
-        let response = try await request
-            .fetch(httpClient)
+        let request = try makeURLRequest(from: convertible)
         
-        if let error = response.error {
-            if error.statusCode == .unauthorized {
-                // we got error 401
-                throw NetworkError.unathorized
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        
+        switch httpResponse.statusCode {
+        case 200..<300:
+            do {
+                return try decoder.decode(T.Result.self, from: data)
+            } catch {
+                throw NetworkError.invalidData
             }
+        case 401:
+            throw NetworkError.unathorized
+        default:
+            throw NetworkError.invalidStatusCode(httpResponse.statusCode)
+        }
+    }
+    
+    private func makeURLRequest<T: APIRequest>(from convertible: T) throws -> URLRequest {
+        let endpoint = convertible.endpoint
+        guard let url = URL(string: endpoint, relativeTo: baseURL) else {
+            throw NetworkError.invalidURL
         }
         
-        guard let data = response.data else {
-            throw NetworkError.invalidData
+        var request = URLRequest(url: url)
+        request.httpMethod = convertible.method.rawValue
+        
+        if let body = convertible.body {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        return try decoder.decode(T.Result.self, from: data)
+        
+        return request
     }
 }
-

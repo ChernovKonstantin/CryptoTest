@@ -1,18 +1,16 @@
-//
-//  DefaultText.swift
-//  CryptoTest
-//
-//  Created by Chernov Kostiantyn on 22.05.2025.
-//
-
 import SwiftUI
 
 struct DefaultText: View {
+    let text: String
+    let color: Color
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text(text)
+            .font(.system(size: 14))
+            .foregroundStyle(color)
     }
 }
 
 #Preview {
-    DefaultText()
+    DefaultText(text: "Test", color: .black)
 }
